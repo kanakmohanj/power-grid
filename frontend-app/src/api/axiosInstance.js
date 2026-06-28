@@ -1,9 +1,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  
-  baseURL: "https://calm-purpose-production-6d7e.up.railway.app",
-  withCredentials: true
+  baseURL: import.meta.env.VITE_API_BASE,
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use((config) => {
@@ -23,7 +22,7 @@ axiosInstance.interceptors.response.use(
       window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;
