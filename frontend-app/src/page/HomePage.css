@@ -1,0 +1,237 @@
+/* === HOLOGRAPHIC HOME THEME === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700;900&display=swap');
+
+/* === MAIN BACKGROUND & GRID === */
+.home-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Power Rangers Grid BG */
+  background: linear-gradient(rgba(2, 11, 28, 0.6), rgba(2, 11, 28, 0.5)), url("../assets/power-rangers-bg.jpg");
+  background-size: cover;
+  background-position: center 30%;
+  /* Shifted up slightly to center the rangers */
+  background-attachment: fixed;
+}
+
+/* CYBER GRID OVERLAY */
+.home-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 95%);
+  pointer-events: none;
+  z-index: 1;
+  transform: perspective(1000px) rotateX(15deg) scale(1.1);
+}
+
+.overlay {
+  display: none;
+}
+
+/* AMBIENT GLOW */
+.home-container::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(0, 243, 255, 0.05) 0%, transparent 70%);
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === CONTENT CARD === */
+.content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 900px;
+  padding: 4rem 3rem;
+
+  /* Glassmorphism */
+  background: rgba(2, 11, 28, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(0, 243, 255, 0.05);
+
+  border-radius: 24px;
+  animation: hologramEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Holographic Bloom on borders */
+.content::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(180deg, rgba(0, 243, 255, 0.6), transparent 50%, rgba(0, 243, 255, 0.6));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+@keyframes hologramEntry {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(30px);
+    filter: blur(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* === HEADLINE === */
+.title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 3rem;
+
+  color: white;
+  text-shadow:
+    0 0 10px rgba(0, 243, 255, 0.6),
+    0 0 20px rgba(0, 243, 255, 0.4),
+    0 0 40px rgba(0, 102, 255, 0.4);
+
+  background: linear-gradient(to bottom, #ffffff, #c2f9ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  position: relative;
+  display: inline-block;
+}
+
+/* === BUTTONS === */
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 1rem 3rem;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+}
+
+/* LOGIN BTN - Hollow Neon */
+.login-btn {
+  background: rgba(0, 15, 30, 0.2);
+  border: 1px solid #00f3ff;
+  color: #00f3ff;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+}
+
+.login-btn:hover {
+  background: rgba(0, 243, 255, 0.1);
+  box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+  transform: translateY(-3px);
+  text-shadow: 0 0 5px white;
+}
+
+/* REGISTER BTN - Filled/Lighter */
+.register-btn {
+  background: rgba(0, 102, 255, 0.1);
+  border: 1px solid #0066ff;
+  color: #4db8ff;
+}
+
+.register-btn:hover {
+  background: rgba(0, 102, 255, 0.2);
+  box-shadow: 0 0 25px rgba(0, 102, 255, 0.4);
+  transform: translateY(-3px);
+  color: white;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+  .title {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 2rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+    letter-spacing: 2px;
+  }
+
+  .content {
+    width: 100%;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 1rem 0;
+    /* Full width buttons look better centered */
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Adjust background for mobile */
+  .home-container {
+    background-position: center center;
+  }
+
+  .content {
+    padding: 2rem 1rem;
+    border-radius: 16px;
+  }
+
+  .content::before {
+    border-radius: 16px;
+  }
+}

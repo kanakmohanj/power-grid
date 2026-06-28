@@ -1,0 +1,72 @@
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - backend/.env
+    depends_on:
+      - ragbot
+      - redis
+      - ai-category
+      
+     
+    restart: always
+
+ 
+
+  ragbot:
+    build: ./backend/src/chatbot
+    container_name: ragbot
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    restart: always
+    
+  frontend:
+    build: ./frontend-app
+    ports: 
+      - "3000:80" 
+    env_file:
+      - ./frontend-app/.env
+    depends_on: 
+      - backend
+
+  ai-category:
+    build: ./backend/src/AI-category
+    container_name: ai-category
+    ports:
+      - "7001:7001"
+    env_file:
+      - backend/.env
+    restart: always
+  
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  backfill:
+    build: ./backend/src/chatbot
+    command: python backfill.py
+    env_file:
+      - backend/.env
+    depends_on:
+      - qdrant  
+  qdrant:
+    image: qdrant/qdrant:v1.16.2
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage    
+volumes:
+  qdrant_data:

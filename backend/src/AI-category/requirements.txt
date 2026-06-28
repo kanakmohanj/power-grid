@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pymongo[srv]
+
+fastembed>=0.3.6
+numpy<2
+
+google-generativeai>=0.5.4
+python-dotenv>=1.0.1
