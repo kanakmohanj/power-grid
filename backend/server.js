@@ -26,7 +26,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://power-grid-sigma.vercel.app/",
+      "https://power-grid-sigma.vercel.app",
       "https://frontend-production-9e21.up.railway.app",
       "https://courteous-amazement-production-bee7.up.railway.app",
       "http://localhost:3000",
