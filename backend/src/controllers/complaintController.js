@@ -35,7 +35,6 @@
 //   }
 // };
 
-
 // export const submitComplaint = async (req, res) => {
 //   try {
 //     if (!req.user?.id) {
@@ -139,7 +138,6 @@
 //   }
 // };
 
-
 // export const assignComplaint = async (req, res) => {
 //   try {
 //     const { complaintId, staffId } = req.body;
@@ -217,7 +215,6 @@
 //   }
 // };
 
-
 // export const updateComplaintStatus = async (req, res) => {
 //   try {
 //     const { complaintId, status, remarks } = req.body;
@@ -264,7 +261,6 @@
 //   }
 // };
 
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -302,11 +298,12 @@ export const rateStaff = async (req, res) => {
 
 // -------------------------------------------------
 
-
 export const submitComplaint = async (req, res) => {
   try {
     if (!req.user?.id) {
-      return res.status(401).json({ success: false, message: "Not authenticated" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
     }
 
     if (req.user.role !== "citizen") {
@@ -331,9 +328,9 @@ export const submitComplaint = async (req, res) => {
 
     try {
       const aiRes = await axios.post(
-        "http://ai-category:7001/submit",
+        "https://power-grid-ai-category.onrender.com/submit",
         { title, description },
-        { timeout: 10000 }
+        { timeout: 10000 },
       );
 
       if (aiRes?.data?.category) category = aiRes.data.category;
@@ -362,7 +359,9 @@ export const submitComplaint = async (req, res) => {
     });
 
     // Clear Redis cache
-    await redisClient.del(`complaints:${req.user.tenantId}:citizen:${req.user.id}`);
+    await redisClient.del(
+      `complaints:${req.user.tenantId}:citizen:${req.user.id}`,
+    );
     await redisClient.del(`complaints:${req.user.tenantId}:admin`);
     await redisClient.del(`admin_stats_${req.user.tenantId}`);
 
@@ -376,7 +375,6 @@ export const submitComplaint = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
 
 // -------------------------------------------------
 export const getComplaints = async (req, res) => {
@@ -457,7 +455,7 @@ export const assignComplaint = async (req, res) => {
         status: "ASSIGNED",
         updatedAt: Date.now(),
       },
-      { new: true }
+      { new: true },
     )
       .populate("assigned_to", "username email fcmToken")
       .populate("submitted_by", "username email");
@@ -498,7 +496,7 @@ export const assignComplaint = async (req, res) => {
       "Queueing assignment notification",
       staffId,
       complaint.title,
-      complaint._id
+      complaint._id,
     );
 
     await taskQueue.add("complaintAssigned", {
@@ -511,9 +509,7 @@ export const assignComplaint = async (req, res) => {
 
     // 🧹 Cache invalidation
     await redisClient.del(`complaints:${req.user.tenantId}:admin`);
-    await redisClient.del(
-      `complaints:${req.user.tenantId}:staff:${staffId}`
-    );
+    await redisClient.del(`complaints:${req.user.tenantId}:staff:${staffId}`);
     await redisClient.del(`admin_stats_${req.user.tenantId}`);
 
     return res.status(200).json({
@@ -521,7 +517,6 @@ export const assignComplaint = async (req, res) => {
       message: "Complaint assigned successfully",
       complaint,
     });
-
   } catch (error) {
     console.error("Assign complaint error:", error);
     return res.status(500).json({
@@ -536,9 +531,17 @@ export const updateComplaintStatus = async (req, res) => {
   try {
     const { complaintId, status, remarks } = req.body;
 
-    const validStatuses = ["OPEN", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"];
+    const validStatuses = [
+      "OPEN",
+      "ASSIGNED",
+      "IN_PROGRESS",
+      "RESOLVED",
+      "CLOSED",
+    ];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status value" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status value" });
     }
 
     const complaint = await Complaint.findOne({
@@ -547,11 +550,18 @@ export const updateComplaintStatus = async (req, res) => {
     });
 
     if (!complaint) {
-      return res.status(404).json({ success: false, message: "Complaint not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found" });
     }
 
-    if (req.user.role === "staff" && String(complaint.assigned_to) !== req.user.id) {
-      return res.status(403).json({ success: false, message: "Not your complaint" });
+    if (
+      req.user.role === "staff" &&
+      String(complaint.assigned_to) !== req.user.id
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not your complaint" });
     }
 
     complaint.status = status;
@@ -562,7 +572,9 @@ export const updateComplaintStatus = async (req, res) => {
 
     // CACHE INVALIDATION
     await redisClient.del(`complaints:${req.user.tenantId}:admin`);
-    await redisClient.del(`complaints:${req.user.tenantId}:staff:${complaint.assigned_to}`);
+    await redisClient.del(
+      `complaints:${req.user.tenantId}:staff:${complaint.assigned_to}`,
+    );
     await redisClient.del(`admin_stats_${req.user.tenantId}`);
 
     console.log("Redis cache cleared → complaint updated");
@@ -576,71 +588,66 @@ export const updateComplaintStatus = async (req, res) => {
     console.error("Update complaint error:", error);
     res.status(500).json({ success: false, message: "Error updating status" });
   }
-  
 };
-export const assignBulkComplaints=async(req,res)=>{
+export const assignBulkComplaints = async (req, res) => {
   try {
-    console.log("bulk assing")
-    const{complaintIds,staffId}=req.body;
-    if(!complaintIds?.length||!staffId){
-      return res.status(400).json({msg:"Invalid Payload"});
+    console.log("bulk assing");
+    const { complaintIds, staffId } = req.body;
+    if (!complaintIds?.length || !staffId) {
+      return res.status(400).json({ msg: "Invalid Payload" });
     }
-    console.log(complaintIds)
-    const staff=await User.findOne({
-      _id:staffId,
-      role:"staff",
-      tenantId:req.user.tenantId,
-    })
-    console.log(staff)
-    if(!staff){
-      return res.status(400).json({msg:"Invalid Staff"});
-
+    console.log(complaintIds);
+    const staff = await User.findOne({
+      _id: staffId,
+      role: "staff",
+      tenantId: req.user.tenantId,
+    });
+    console.log(staff);
+    if (!staff) {
+      return res.status(400).json({ msg: "Invalid Staff" });
     }
 
-    const result=await Complaint.updateMany(
+    const result = await Complaint.updateMany(
       {
-        _id:{$in:complaintIds},
-        tenantId:req.user.tenantId,
-
+        _id: { $in: complaintIds },
+        tenantId: req.user.tenantId,
       },
       {
-        assigned_to:staffId,
-        status:"ASSIGNED",
-        updatedAt:Date.now(),
-      }
+        assigned_to: staffId,
+        status: "ASSIGNED",
+        updatedAt: Date.now(),
+      },
     );
-     return res.status(200).json({
+    return res.status(200).json({
       success: true,
       matched: result.matchedCount,
       updated: result.modifiedCount,
-     });
-     
-  }
-  catch(err){
+    });
+  } catch (err) {
     console.log(err);
-    res.status(500).json({msg:"Bulk complaints failed"})
+    res.status(500).json({ msg: "Bulk complaints failed" });
   }
 };
-export const deleteComplaint=async(req,res)=>{
-  try{
-    const complaint =await Complaint.findOne({
-      _id:req.params.id,
-      submitted_by:req.user.id,
-      tenantId:req.user.tenantId,
-      status:"OPEN",
+export const deleteComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findOne({
+      _id: req.params.id,
+      submitted_by: req.user.id,
+      tenantId: req.user.tenantId,
+      status: "OPEN",
     });
-    if(!complaint){
+    if (!complaint) {
       return res.status(400).json({
-        msg:"Cannot delete this complaint",
-      })
+        msg: "Cannot delete this complaint",
+      });
     }
     await complaint.deleteOne();
-    res.json({success:true,msg:"Complaint deleted"});
-  } catch(err){
+    res.json({ success: true, msg: "Complaint deleted" });
+  } catch (err) {
     console.log(err);
-    res.status(500).json({msg:"Delete failed"})
+    res.status(500).json({ msg: "Delete failed" });
   }
-}
+};
 export const updateComplaint = async (req, res) => {
   try {
     const complaintId = req.params.id;
@@ -684,45 +691,39 @@ export const updateComplaint = async (req, res) => {
     res.status(500).json({ msg: "Update failed" });
   }
 };
-export const staffBulkUpdateComplaints = async(req,res)=>{
-  try{
-    if(req.user.role!="staff"){
-      return res.status(403).json({msg:"only Staff allowed"});
-
+export const staffBulkUpdateComplaints = async (req, res) => {
+  try {
+    if (req.user.role != "staff") {
+      return res.status(403).json({ msg: "only Staff allowed" });
     }
-    const {complaintIds,status,remarks}=req.body;
-    if(!complaintIds?.length||!status){
-      return res.status(403).json({msg:"Invalid Payload"});
+    const { complaintIds, status, remarks } = req.body;
+    if (!complaintIds?.length || !status) {
+      return res.status(403).json({ msg: "Invalid Payload" });
     }
-    const allowedStatuses=["IN_PROGRESS","RESOLVED","CLOSED"];
-    if(!allowedStatuses.includes(status)){
-      return res.status(400).json({msg:"Invalid status"});
+    const allowedStatuses = ["IN_PROGRESS", "RESOLVED", "CLOSED"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ msg: "Invalid status" });
     }
-    const result=await Complaint.updateMany({
-      _id:{$in:complaintIds},
-      assigned_to:req.user.id,
-      tenantId:req.user.tenantId,
-
-    },
-    {
-      $set:{
-        status,
-        remarks,
-        updatedAt:Date.now(),
+    const result = await Complaint.updateMany(
+      {
+        _id: { $in: complaintIds },
+        assigned_to: req.user.id,
+        tenantId: req.user.tenantId,
       },
-    }
-  
-
-  );
-  res.json({
-    succes:true,
-    updated:result.modifiedCount,
-
-  });
-  }catch(err){
+      {
+        $set: {
+          status,
+          remarks,
+          updatedAt: Date.now(),
+        },
+      },
+    );
+    res.json({
+      succes: true,
+      updated: result.modifiedCount,
+    });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({msg:"Bulk Update failed"});
-
+    res.status(500).json({ msg: "Bulk Update failed" });
   }
-}
-  
+};

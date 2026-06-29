@@ -8,9 +8,9 @@ export const aiCategoryPriority = async (req, res) => {
 
     // 1️⃣ Call AI-category
     const aiRes = await axios.post(
-      "http://ai-category:7001/submit",
+      "https://power-grid-ai-category.onrender.com/submit",
       { title, description },
-      { timeout: 15000 }
+      { timeout: 15000 },
     );
 
     const { category, priority } = aiRes.data;
@@ -31,7 +31,6 @@ export const aiCategoryPriority = async (req, res) => {
       message: "Complaint submitted successfully",
       complaint,
     });
-
   } catch (err) {
     console.error("Create complaint error:", err);
     res.status(500).json({ message: "Failed to submit complaint" });
