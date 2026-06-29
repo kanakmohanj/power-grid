@@ -27,3 +27,6 @@ async def submit(c: ComplaintIn):
         "category": category,
         "priority": priority
     }
+@app.get("/")
+async def root():
+    return {"status": "AI Category Predictor is running"}
