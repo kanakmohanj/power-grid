@@ -21,9 +21,9 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME", "complaints")
 
 qdrant = QdrantClient(
     url=QDRANT_URL,
-    # api_key=QDRANT_API_KEY,
+    api_key=QDRANT_API_KEY,
     timeout=60,
-    # https=True
+    https=True
 )
 
 
