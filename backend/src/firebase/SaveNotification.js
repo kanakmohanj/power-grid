@@ -1,6 +1,6 @@
 
 import User from "../models/User.js";
-import { taskQueue } from "../queues/queue.js";
+import { dispatchNotification } from "../helpers/notificationHelper.js";
 const saveNotificationToken = async (req, res, next) => {
   try {
     console.log("Saving token...");
@@ -22,10 +22,10 @@ const saveNotificationToken = async (req, res, next) => {
     console.log("Token saved:", fcmToken, "User:", userId);
 
     if (isNewToken || tokenChanged) {
-      await taskQueue.add("saveTokenConfirmation", {
+      dispatchNotification("saveTokenConfirmation", {
         userId: user._id,
         fcmToken,
-      });
+      }).catch((err) => console.error(err));
       console.log("Queued saveTokenConfirmation job for user:", userId);
     }
 

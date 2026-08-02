@@ -2,24 +2,15 @@
 
 import User from '../models/User.js';
 import Complaint from '../models/Complaint.js';
-import redisClient from "../Configs/redisClient.js";
 import bcrypt from "bcryptjs";
-// import { sendEmail } from '../firebase/SendNotification.js';
 import fs from "fs";
 import csv from "csv-parser";
-import { taskQueue } from '../queues/queue.js';
+import { dispatchNotification } from '../helpers/notificationHelper.js';
 
 
 export const getAllStaff = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const cacheKey = `staff_ratings_${tenantId}`;
-
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      console.log("Staff ratings served from Redis");
-      return res.status(200).json(JSON.parse(cached));
-    }
 
     const staff = await User.find({ role: "staff", tenantId })
       .select("_id username email ratings");
@@ -46,9 +37,6 @@ export const getAllStaff = async (req, res) => {
         distribution,
       };
     });
-
-    await redisClient.setEx(cacheKey, 600, JSON.stringify(staffWithStats));
-    console.log("Staff ratings cached in Redis");
 
     res.status(200).json(staffWithStats);
 
@@ -93,13 +81,6 @@ export const getStats = async (req, res) => {
 export const getAdminStats = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const cacheKey = `admin_stats_${tenantId}`;
-
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      return res.json({ cached: true, ...JSON.parse(cached) });
-    }
-
     const filter = { tenantId };
 
     const total = await Complaint.countDocuments(filter);
@@ -146,8 +127,6 @@ export const getAdminStats = async (req, res) => {
       byEngineer,
       dailyTrend
     };
-
-    await redisClient.setEx(cacheKey, 300, JSON.stringify(stats));
 
     res.json({ cached: false, ...stats });
 
@@ -249,19 +228,11 @@ export const adminCreateUser = async (req, res) => {
     tenantId: req.user.tenantId,
   });
 
-  await taskQueue.add("sendNotification", {
-  userId: user._id,
-  title: "Welcome to DevSync!",
-  body: "Welcome aboard! Your DevSync account is ready. You can now log in and start using the system.",
-  htmlMessage: `
-    <h2>Welcome to DevSync!</h2>
-    <p>Hello ${user.username},</p>
-    <p>Your account has been created successfully. You can now log in and access your dashboard.</p>
-    <br/>
-    <p>— DevSync Team</p>
-  `,
-
-});
+  dispatchNotification("sendNotification", {
+    userId: user._id,
+    title: "Welcome to DevSync!",
+    body: "Welcome aboard! Your DevSync account is ready. You can now log in and start using the system.",
+  }).catch((err) => console.error(err));
   res.status(201).json({
     id: user._id,
     username: user.username,

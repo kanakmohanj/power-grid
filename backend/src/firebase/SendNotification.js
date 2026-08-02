@@ -1,7 +1,7 @@
 import admin from "./FirebaseAdmin.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { taskQueue } from "../queues/queue.js";
+import { dispatchNotification } from "../helpers/notificationHelper.js";
 import Complaint from "../models/Complaint.js";
 import User from "../models/User.js";
 import cron from "node-cron";
@@ -84,8 +84,7 @@ export const startDeadlineCron = () => {
           }
         }
 
-        // Enqueue Alert 
-        await taskQueue.add("deadlineAlert", {
+        dispatchNotification("deadlineAlert", {
           userId: staffUser._id,
           complaint: {
             _id: complaint._id,
@@ -95,7 +94,7 @@ export const startDeadlineCron = () => {
             deadline: complaint.deadline,
           },
           minutesRemaining,
-        });
+        }).catch((err) => console.error(err));
 
         // save lastDeadlineAlerted
         complaint.lastDeadlineAlerted = now;
