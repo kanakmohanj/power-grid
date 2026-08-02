@@ -87,12 +87,12 @@ export function AuthButtons() {
       {!token ? (
         <>
           {/* Register - Cyan Theme */}
-          <Link
+          {/* <Link
             to="/register"
             className={`${btnBase} bg-cyan-400/10 border border-cyan-400 text-cyan-400 hover:bg-cyan-400/20 hover:text-white hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] hover:-translate-y-0.5`}
           >
             Register
-          </Link>
+          </Link> */}
 
           {/* Login - Blue Theme */}
           <Link

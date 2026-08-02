@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import { syncFcmToken } from "../../Firebase/syncFcmToken";
 
 export default function Login() {
   const [formData, setFormData] = useState({ identifier: "", password: "" });
@@ -9,18 +8,31 @@ export default function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userStr = localStorage.getItem("user");
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        const role = user?.role;
+        if (role === "admin") navigate("/dashboard/admin", { replace: true });
+        else if (role === "staff" || role === "officer") navigate("/dashboard/staff", { replace: true });
+        else navigate("/dashboard/citizen", { replace: true });
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+      }
+    }
+  }, [navigate]);
+
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const loginWithCredentials = async (credentials) => {
     setIsLoading(true);
     setError("");
 
     try {
-      console.log("logiingddffg");
-
-      const res = await axiosInstance.post("/api/auth/login", formData);
+      const res = await axiosInstance.post("/api/auth/login", credentials);
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
@@ -28,28 +40,48 @@ export default function Login() {
         const role = res.data.user.role;
 
         if (role === "admin") navigate("/dashboard/admin");
-        else if (role === "staff") navigate("/dashboard/staff");
+        else if (role === "staff" || role === "officer") navigate("/dashboard/staff");
         else navigate("/dashboard/citizen");
       } else {
         setError("Login failed. No token received.");
       }
     } catch (err) {
-      // ---------------------------
-      // 🔥 RATE LIMIT HANDLING HERE
-      // ---------------------------
       if (err.response?.status === 429) {
         const msg =
           err.response?.data?.message ||
           "Too many attempts. Please try again later.";
 
-        alert(msg); // popup alert
-        setError(msg); // show in UI red text
+        alert(msg);
+        setError(msg);
       } else {
         setError(err.response?.data?.msg || "Invalid credentials.");
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await loginWithCredentials(formData);
+  };
+
+  const handleDemoAdmin = () => {
+    const creds = { identifier: "admin2026", password: "123456" };
+    setFormData(creds);
+    loginWithCredentials(creds);
+  };
+
+  const handleDemoStaff = () => {
+    const creds = { identifier: "ishitaSingh", password: "123456" };
+    setFormData(creds);
+    loginWithCredentials(creds);
+  };
+
+  const handleDemoCitizen = () => {
+    const creds = { identifier: "AVNIK", password: "123456" };
+    setFormData(creds);
+    loginWithCredentials(creds);
   };
 
   return (
@@ -80,6 +112,7 @@ export default function Login() {
               <input
                 type="text"
                 name="identifier"
+                value={formData.identifier}
                 placeholder="Enter email or username"
                 onChange={handleChange}
                 required
@@ -95,6 +128,7 @@ export default function Login() {
               <input
                 type="password"
                 name="password"
+                value={formData.password}
                 placeholder="Enter password"
                 onChange={handleChange}
                 required
@@ -120,15 +154,37 @@ export default function Login() {
             </button>
           </form>
 
-          {/* REGISTER LINK */}
-          <div className="mt-8 text-center">
-            <p className="text-cyan-200/50 text-xs tracking-widest uppercase mb-2">Don’t have an account?</p>
-            <span
-              onClick={() => navigate("/register")}
-              className="link-cyan cursor-pointer font-bold text-sm tracking-widest uppercase pb-1 border-b border-transparent hover:border-cyan-400"
-            >
-              Register
-            </span>
+          {/* DEMO LOGIN BUTTONS */}
+          <div className="mt-6 pt-6 border-t border-cyan-500/20">
+            <p className="text-center text-cyan-200/60 text-xs font-orbitron tracking-widest uppercase mb-4">
+              ⚡ Quick Demo Logins
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleDemoAdmin}
+                className="py-2.5 px-2 rounded bg-cyan-500/10 border border-cyan-400/40 text-cyan-300 font-orbitron text-xs font-semibold hover:bg-cyan-400/20 hover:border-cyan-300 hover:shadow-[0_0_10px_rgba(0,243,255,0.3)] transition-all duration-200 cursor-pointer"
+              >
+                {isLoading ? "..." : "Admin Demo"}
+              </button>
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleDemoStaff}
+                className="py-2.5 px-2 rounded bg-blue-500/10 border border-blue-400/40 text-blue-300 font-orbitron text-xs font-semibold hover:bg-blue-400/20 hover:border-blue-300 hover:shadow-[0_0_10px_rgba(0,102,255,0.3)] transition-all duration-200 cursor-pointer"
+              >
+                {isLoading ? "..." : "Staff Demo"}
+              </button>
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleDemoCitizen}
+                className="py-2.5 px-2 rounded bg-emerald-500/10 border border-emerald-400/40 text-emerald-300 font-orbitron text-xs font-semibold hover:bg-emerald-400/20 hover:border-emerald-300 hover:shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all duration-200 cursor-pointer"
+              >
+                {isLoading ? "..." : "Citizen Demo"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import ComplaintLifecycle from "./ComplaintLifecycle";
 import StatCard from "../../components/StatCard";
 import { useNavigate } from "react-router-dom";
 export default function CitizenDashboard() {
-  const [activeMenu, setActiveMenu] = useState("dashboard");
+  const [activeMenu, setActiveMenu] = useState("lifecycle");
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [stats, setStats] = useState(null);
@@ -37,7 +37,7 @@ export default function CitizenDashboard() {
   if (loading)
     return (
       <p className="text-center text-[#7CFFD8] mt-20 text-lg font-semibold">
-        Checking authorization...
+        Loading...
       </p>
     );
 

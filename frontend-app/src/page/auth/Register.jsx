@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,22 @@ export default function Register() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userStr = localStorage.getItem("user");
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        const role = user?.role;
+        if (role === "admin") navigate("/dashboard/admin", { replace: true });
+        else if (role === "staff" || role === "officer") navigate("/dashboard/staff", { replace: true });
+        else navigate("/dashboard/citizen", { replace: true });
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+      }
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
