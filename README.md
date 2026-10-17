@@ -208,19 +208,8 @@ npm run dev
 
 ---
 
-## 14. Team Members
 
-
-| Name | GitHub |
-|------|------|
-| Shreya shashwat|  https://github.com/Shreyashashwat |
-| Jhalak Yadav |  https://github.com/Jhalak3211 |
-| Ishita Singh|  https://github.com/ishu810 |
-| Kanak Mohan Jee|  https://github.com/kanakmohanj|
-
----
-
-## 15. GitHub Checklist
+## 14. GitHub Checklist
 
 - `.env` added to `.gitignore`  
 - Screenshots included  
